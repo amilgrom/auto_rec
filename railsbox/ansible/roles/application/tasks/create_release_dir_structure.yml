@@ -1,0 +1,48 @@
+---
+- name: Create app directory
+  file:
+    path: "{{ path }}"
+    state: directory
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+  become: true
+
+- name: Create general directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+  with_items:
+    - "{{ releases_path }}"
+    - "{{ shared_path }}"
+    - "{{ shared_path }}/tmp"
+    - "{{ shared_path }}/log"
+    - "{{ shared_path }}/config"
+    - "{{ shared_path }}/vendor"
+    - "{{ shared_path }}/vendor/bundle"
+
+- name: "Create {{ shared_path }}/config/database.yml"
+  template:
+    src: database.yml.j2
+    dest: "{{ shared_config_path }}/database.yml"
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+    mode: 0600
+    backup: yes
+
+- name: "Copy config/secrets.yml to {{ shared_path }}/config"
+  copy: 
+    src: "../../../../../config/secrets.yml"
+    dest: "{{ shared_config_path }}/secrets.yml"
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+    mode: 0600
+
+- name: "Copy .env to {{ shared_path }}"
+  copy: 
+    src: "../../../../../.env"
+    dest: "{{ shared_path }}/.env"
+    owner: "{{ user_name }}"
+    group: "{{ group_name }}"
+    mode: 0600

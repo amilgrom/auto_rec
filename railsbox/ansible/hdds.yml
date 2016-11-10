@@ -1,0 +1,6 @@
+---
+- name: Create swap files on hard disk servers
+  hosts: hdds
+  remote_user: "{{ user_name }}"
+  roles:
+    - swap

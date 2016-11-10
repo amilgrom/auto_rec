@@ -1,0 +1,56 @@
+---
+- name: Install packages
+  apt: 
+    name: "{{ item }}"
+  with_items:
+    - libpq-dev
+    - postgresql
+    - postgresql-contrib
+    - python-pip
+    - python-dev
+    - acl #needed to allow ansible to create db_user
+  become: true
+
+- name: Configure PostgreSQL - postgresql.conf
+  template:
+    src: postgresql.conf.j2
+    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+  notify: restart postgresql
+  become: true
+
+- name: Configure PostgreSQL - pg_hba.conf
+  template:
+    src: pg_hba.conf.j2
+    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+  notify: restart postgresql
+  become: true
+
+- name: Install required Python modules
+  pip:
+    name: psycopg2
+  become: true
+
+- name: Create postgresql user
+  postgresql_user:
+    name: "{{ postgresql_db_user }}"
+    password: "{{ postgresql_db_password }}"
+    role_attr_flags: "CREATEDB,SUPERUSER,CREATEROLE"
+  become: true
+  become_user: "{{ postgresql_admin_user }}"
+
+- name: Make sure the postgis extensions are installed
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - libgeos-c1
+    - "postgresql-{{ postgresql_version }}-postgis-{{ postgresql_ext_postgis_version }}"
+  notify: restart postgresql
+  when: " postgresql_extensions and 'postgis' in postgresql_extensions"
+  become: true
+
+- name: Create extensions
+  shell: "psql {{ postgresql_db_name }} -c 'CREATE EXTENSION IF NOT EXISTS {{ item }};'"
+  with_items: "{{ postgresql_extensions }}"
+  become: true
+  become_user: "{{ postgresql_admin_user }}"
+  when: postgresql_extensions

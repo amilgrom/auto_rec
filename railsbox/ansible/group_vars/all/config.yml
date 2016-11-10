@@ -1,0 +1,21 @@
+---
+environments:
+  - development
+  - production
+
+# server vars
+server_name: localhost
+
+# base vars
+package_bundles:
+packages:
+
+# ownership vars
+app_name: auto_rec
+user_name: "{{ 'vagrant' if target == 'virtualbox' else app_name }}"
+group_name: "{{ user_name }}"
+
+profile_d_path: "{{ user_home_path }}/profile.d"
+
+# apt vars
+use_apt_proxy: false

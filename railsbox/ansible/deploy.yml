@@ -1,0 +1,6 @@
+---
+- name: Deploy
+  hosts: appservers
+  remote_user: "{{ user_name }}"
+  roles:
+    - application

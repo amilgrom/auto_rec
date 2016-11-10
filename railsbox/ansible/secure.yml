@@ -1,0 +1,8 @@
+---
+- name: Provide basic security on all servers
+  hosts: all
+  remote_user: root
+  roles:
+    - ufw
+    - app_user
+    - no_root

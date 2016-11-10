@@ -1,0 +1,6 @@
+---
+databases:
+  - postgresql
+postgresql_db_name: "{{ app_name }}_{{ rails_env }}"
+postgresql_db_user: db_usr
+postgresql_extensions:

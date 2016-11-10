@@ -1,0 +1,11 @@
+---
+- name: Setup application servers
+  hosts: appservers
+  remote_user: "{{ user_name }}"
+  roles:
+    - linux_filesystem
+    - base
+    - vim
+    - { role: ruby, tags: ruby }
+    - application
+    - puma

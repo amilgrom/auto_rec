@@ -1,0 +1,8 @@
+---
+  - name: Disable root ssh
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      line: "PermitRootLogin no # Disable root ssh"
+      regexp: "^PermitRootLogin yes$"
+      backrefs: yes
+    notify: restart ssh

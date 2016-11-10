@@ -1,0 +1,7 @@
+---
+- name: Setup database servers
+  hosts: dbservers
+  remote_user: "{{ user_name }}"
+  roles:
+    - base
+    - postgresql

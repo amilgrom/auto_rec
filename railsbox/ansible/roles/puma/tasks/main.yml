@@ -1,0 +1,34 @@
+---
+- name: Configure puma
+  template:
+    src: puma.rb.j2
+    dest: "{{ shared_config_path }}/puma.{{ rails_env }}.rb"
+
+- name: Check if puma is installed
+  shell: /bin/bash -l -c 'which puma' chdir={{ app_path }}
+  become: true
+  become_user: "{{ ruby_user_name }}" # make stdin tty
+  register: puma_gem_check_result
+  changed_when: false # never
+  ignore_errors: true
+
+- name: Install puma
+  command: /bin/bash -l -c 'gem install puma --no-ri --no-rdoc' chdir={{ app_path }}
+  become: false
+  when: puma_gem_check_result.rc != 0
+
+- name: Create directories for sockets and pids
+  file:
+    path: "{{ app_temp_path }}/{{ item }}"
+    state: "directory"
+  with_items:
+    - pids
+    - sockets
+  become: false
+
+- name: Create upstart config
+  template:
+    src: "upstart.conf.j2"
+    dest: "/etc/init/{{ puma_app_name }}.conf"
+  become: true
+  notify: restart application

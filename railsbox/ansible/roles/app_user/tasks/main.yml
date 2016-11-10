@@ -1,0 +1,29 @@
+---
+  - name: "Add user: {{ user_name }} with bash shell"
+    user:
+      name:     "{{ user_name }}"
+      password: "{{ user_pswd_md5hash }}"
+      shell:    "/bin/bash"
+
+  - name: "Add {{ user_name }} passwordless sudo for ansible automation"
+    lineinfile:
+      dest:     /etc/sudoers.d/90-cloud-init-users
+      create:   yes
+      line:     "{{ item }}"
+      validate: 'visudo -cf %s'
+    with_items:
+      - "# User rules for {{ user_name }}"
+      - "# {{ user_name }} passwordless sudo for ansible automation"
+      - "{{ user_name }} ALL=(ALL) NOPASSWD:ALL"
+
+# - name: Allow to start / stop app with sudo
+#   template:
+#     src: sudoers.d.conf.j2
+#     dest: "/etc/sudoers.d/{{ app_name }}"
+#     validate: 'visudo -cf %s'
+
+  - name: "Add local rsa ssh key to {{ user_name }}'s authorized_keys"
+    authorized_key:
+      user: "{{ user_name }}"
+      key:  "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      path: "/home/{{ user_name }}/.ssh/authorized_keys"

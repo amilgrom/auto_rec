@@ -1,0 +1,7 @@
+---
+host_service: digitalocean
+partition_format: gpt
+filesystem_format: ext4
+identifier_type: id
+identifiers:
+  - volume-nyc1-01

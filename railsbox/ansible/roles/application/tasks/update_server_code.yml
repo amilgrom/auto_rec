@@ -1,0 +1,68 @@
+---
+- name: Stat most recent git commit
+  git:
+    repo: "{{ git_url }}"
+    dest: "{{ this_release_path }}"
+    version: "{{ git_branch }}"
+    accept_hostkey: yes
+    clone: no
+    update: no
+  become: false
+  register: git
+
+- block:
+    - debug:
+        msg: "SHA-1 before git update is {{ git.before }}"
+
+    - debug:
+        msg: "SHA-1 after git update is {{ git.after }}"
+
+    - set_fact:
+        this_release_path: "{{ releases_path }}/{{ lookup('pipe', 'date +%Y-%m-%d_%H:%M:%S') }}"
+
+    - debug:
+        msg: "New release path {{ this_release_path }}"
+
+    - name: Create new release dir
+      file:
+        path: "{{ this_release_path }}"
+        state: directory
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+
+    - name: Download code
+      git:
+        repo: "{{ git_url }}"
+        dest: "{{ this_release_path }}"
+        version: "{{ git_branch }}"
+        accept_hostkey: yes
+      become: false
+
+    - name: Delete release's shared files
+      file:
+        path: "{{ this_release_path }}/{{ item }}"
+        state: absent
+      with_items:
+        - config/database.yml
+        - config/secrets.yml
+        - "config/puma.{{ rails_env }}.rb"
+        - log
+        - tmp
+        - vendor/bundle
+        - .env
+
+    - name: Symlink shared files
+      file:
+        src: "{{ shared_path }}/{{ item }}"
+        dest: "{{ this_release_path }}/{{ item }}"
+        state: link
+        force: yes
+      with_items:
+        - config/database.yml
+        - config/secrets.yml
+        - "config/puma.{{ rails_env }}.rb"
+        - log
+        - tmp
+        - vendor/bundle
+        - .env
+  when: git.changed

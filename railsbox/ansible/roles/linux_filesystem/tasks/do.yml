@@ -1,0 +1,27 @@
+---
+- set_fact:
+    disk_path:    "/dev/disk/by-{{ identifier_type }}/scsi-0DO_Volume_{{ include_item }}"
+    mount_path:   "/mnt/{{ include_item }}"
+
+# create a partition when the vendor is DO and there are no existing partitions
+- include: do_create_volume_partition.yml
+  with_dict: "{{ ansible_devices }}"
+  when:
+    - item.value.vendor == "DO"
+    - item.value.partitions|count == 0
+
+# sudo mkfs.ext4 /dev/disk/by-id/scsi-0DO_Volume_volume-nyc1-01-part1
+- name: "Format volume: with {{ filesystem_format }} filesystem"
+  filesystem:
+    dev:    "{{ disk_path }}-part1"
+    fstype: "{{ filesystem_format }}"
+  become: true
+
+- name: Mount filesystem
+  mount:
+    name:   "{{ mount_path }}-part1"
+    src:    "{{ disk_path }}-part1"
+    fstype: "{{ filesystem_format }}"
+    opts:   "defaults,discard"
+    state:  mounted
+  become: true

@@ -1,0 +1,6 @@
+---
+server_type: nginx_puma
+
+# nginx vars
+ssl_certificate_path: "/etc/nginx/ssl/{{ server_name }}.crt"
+ssl_certificate_key_path: "/etc/nginx/ssl/{{ server_name }}.key"

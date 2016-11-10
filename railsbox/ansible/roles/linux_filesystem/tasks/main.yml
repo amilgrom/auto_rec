@@ -1,0 +1,6 @@
+---
+- include: do.yml
+  when: host_service == 'digitalocean'
+  with_items: "{{ identifiers }}"
+  loop_control:
+    loop_var: include_item

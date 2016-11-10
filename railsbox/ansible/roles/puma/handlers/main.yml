@@ -1,0 +1,6 @@
+---
+- name: restart application
+  service:
+    name: "{{ puma_app_name }}"
+    state: restarted
+  become: true

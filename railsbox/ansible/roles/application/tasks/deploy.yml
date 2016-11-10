@@ -1,0 +1,71 @@
+---
+- set_fact:
+    this_release_path: "{{ app_path }}"
+
+- include: update_server_code.yml
+  when: target == 'server'
+
+- name: Check if bundler is installed
+  command: /bin/bash -l -c 'which bundle'
+  args:
+    chdir: "{{ this_release_path }}"
+  register: bundle_gem_check_result
+  changed_when: false # never
+  ignore_errors: true
+
+- name: Install bundler
+  command: /bin/bash -l -c 'gem install bundler --no-ri --no-rdoc'
+  args:
+    chdir: "{{ this_release_path }}"
+  become: true
+  become_user: "{{ ruby_user_name }}"
+  when: bundle_gem_check_result.rc != 0
+
+- name: Install gems (production)
+  command: /bin/bash -lc 'bundle install --deployment --without "development test"'
+  args:
+    chdir: "{{ this_release_path }}"
+  when: rails_env == 'production'
+  register: result
+  changed_when: result.stdout.find('Installing') != -1
+  notify: restart application
+
+- name: Install gems (non-production)
+  command: /bin/bash -lc 'bundle install'
+  args:
+    chdir: "{{ this_release_path }}"
+  when: rails_env != 'production'
+  register: result
+  changed_when: result.stdout.find('Installing') != -1
+  notify: restart application
+
+- name: Precompile assets
+  command: /bin/bash -lc 'bundle exec rake assets:precompile'
+  environment:
+    RAILS_ENV: "{{ rails_env }}"
+  args:
+    chdir: "{{ this_release_path }}"
+  when: rails_env == 'production'
+  register: result
+  changed_when: result.stderr.find('Writing') != -1
+  notify: restart application
+
+- name: "Create database"
+  command: /bin/bash -lc 'bundle exec rake db:create'
+  environment:
+    RAILS_ENV: "{{ rails_env }}"
+  args:
+    chdir: "{{ this_release_path }}"
+  register: result
+  changed_when: result.stdout.find('Created database') != -1
+  notify: restart application
+
+- name: "Migrate database"
+  command: /bin/bash -lc 'bundle exec rake db:migrate'
+  environment:
+    RAILS_ENV: "{{ rails_env }}"
+  args:
+    chdir: "{{ this_release_path }}"
+  register: result
+  changed_when: result.stdout != ''
+  notify: restart application

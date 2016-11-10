@@ -1,0 +1,15 @@
+---
+# sudo dd if=/dev/zero of=/dev/disk/by-id/scsi-0DO_Volume_volume-nyc1-01 bs=512 count=1 conv=notrunc
+- name: "Erase possible preexisting partition information"
+  command: "dd if=/dev/zero of={{ disk_path }} bs=512 count=1 conv=notrunc"
+  become: true
+
+# sudo parted /dev/disk/by-id/scsi-0DO_Volume_volume-nyc1-01 mklabel gpt
+- name: "Make partition table: {{ partition_format }}"
+  command: "parted {{ disk_path }} mklabel {{ partition_format }}"
+  become: true
+
+# sudo parted -a opt /dev/disk/by-id/scsi-0DO_Volume_volume-nyc1-01 mkpart primary ext4 0% 100%
+- name: "Partition volume: single {{ partition_format }} partition"
+  command: "parted -a opt {{ disk_path }} mkpart primary {{ filesystem_format }} 0% 100%"
+  become: true

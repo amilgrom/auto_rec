@@ -1,0 +1,17 @@
+digitalocean ansible_host=198.199.123.148 ansible_port=22
+
+[hdds]
+
+[dbservers]
+digitalocean
+
+[appservers]
+digitalocean
+
+[webservers]
+digitalocean
+
+[production:children]
+dbservers
+appservers
+webservers

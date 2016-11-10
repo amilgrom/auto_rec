@@ -1,0 +1,11 @@
+---
+  - name: Allow http(s) ports through firewall
+    ufw:
+      direction: in
+      port: "{{ item }}"
+      rule: allow
+      proto: tcp
+    with_items:
+      - http
+      - https
+    become: true

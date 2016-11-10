@@ -1,0 +1,16 @@
+---
+- include: create_release_dir_structure.yml
+  when: target == 'server'
+
+- include: deploy.yml
+
+- name: Symlink new release
+  file:
+    src: "{{ this_release_path }}"
+    dest: "{{ app_path }}"
+    state: link
+    force: yes
+  notify: restart application
+  when: 
+    - target == 'server'
+    - git.changed
