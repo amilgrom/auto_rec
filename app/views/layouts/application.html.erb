@@ -6,7 +6,7 @@
     <%= render 'layouts/shim' %>
   </head>
   <body>
-    <!-- <%= render 'layouts/header' %> -->
+    <%= render 'layouts/header' %>
     <div class="container">
       <%= content_tag(:div, notice, class: "notice") %>
       <%= content_tag(:div, alert,  class: "alert") %>
@@ -15,7 +15,7 @@
         <%= content_tag(:div, message, class: "alert alert-#{message_type}") %>
       <% end %>
       <%= yield %>
-      <!-- <%= render 'layouts/footer' %> -->
+      <%= render 'layouts/footer' %>
       <%= debug(params) if Rails.env.development? %>
     </div>
   </body>
