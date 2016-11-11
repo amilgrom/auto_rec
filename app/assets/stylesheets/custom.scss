@@ -198,6 +198,10 @@ input {
   }
 }
 
+.alert-notice {
+  @extend .alert-info
+}
+
 #session_remember_me {
   width: auto;
   margin-left: 0;
